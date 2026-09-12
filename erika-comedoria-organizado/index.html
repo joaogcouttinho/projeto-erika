@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erika Comedoria | Gestão</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF para gerar arquivos PDF automáticos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+        <script src="js/config.js"></script>
+
+        <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body class="h-screen overflow-hidden selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- TELA DE LOGIN MINIMALISTA -->
+    <div id="login-screen" class="h-screen w-screen flex items-center justify-center bg-background absolute inset-0 z-50">
+        <div class="bg-surface p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-md border border-slate-100">
+            <div class="text-center mb-10">
+                <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-slate-100">
+                    <i class="fa-solid fa-utensils text-primary text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Erika Comedoria</h1>
+                <p class="text-sm text-textMuted mt-1">Gestão de Estoque e Vendas</p>
+            </div>
+
+            <form id="form-login" class="space-y-6">
+                <div>
+                    <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Usuário</label>
+                    <div class="relative">
+                        <i class="fa-regular fa-user absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="text" id="login-user" autocomplete="username" required class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Senha</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="password" id="login-pass" autocomplete="current-password" required class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm">
+                    </div>
+                </div>
+                
+                <div id="login-error" class="hidden text-red-500 text-sm text-center bg-red-50 py-3 rounded-xl border border-red-100">
+                    Credenciais inválidas. Tente novamente.
+                </div>
+
+                <button type="submit" class="w-full bg-primary hover:bg-primaryHover text-white font-medium py-3.5 rounded-xl transition-all shadow-sm hover:shadow active:scale-[0.98]">
+                    Acessar Painel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- APLICAÇÃO PRINCIPAL -->
+    <div id="app-layout" class="hidden h-screen flex">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-surface border-r border-slate-200 flex flex-col justify-between hidden md:flex z-10">
+            <div>
+                <div class="h-20 flex items-center px-8 border-b border-slate-100">
+                    <i class="fa-solid fa-utensils text-primary text-xl mr-3"></i>
+                    <div class="leading-none">
+                        <h1 class="text-base font-bold text-slate-800 tracking-tight">Erika Comedoria</h1>
+                        <span class="text-[10px] text-textMuted uppercase tracking-widest font-medium mt-1 block">Sistema de Gestão</span>
+                    </div>
+                </div>
+                <nav class="mt-6 px-4 space-y-2" id="nav-menu">
+                    <button onclick="navigate('dashboard')" class="nav-btn active-nav w-full flex items-center px-4 py-3 rounded-xl text-sm text-textMuted hover:bg-slate-50 transition-colors" data-target="dashboard">
+                        <i class="fa-solid fa-chart-simple w-5 mr-3"></i> Visão Geral
+                    </button>
+                    <button onclick="navigate('inventory')" class="nav-btn w-full flex items-center px-4 py-3 rounded-xl text-sm text-textMuted hover:bg-slate-50 transition-colors" data-target="inventory">
+                        <i class="fa-solid fa-box-open w-5 mr-3"></i> Estoque
+                    </button>
+                    <button onclick="navigate('sales')" class="nav-btn w-full flex items-center px-4 py-3 rounded-xl text-sm text-textMuted hover:bg-slate-50 transition-colors" data-target="sales">
+                        <i class="fa-solid fa-cash-register w-5 mr-3"></i> PDV / Vendas
+                    </button>
+                    <button onclick="navigate('reports')" class="nav-btn w-full flex items-center px-4 py-3 rounded-xl text-sm text-textMuted hover:bg-slate-50 transition-colors" data-target="reports">
+                        <i class="fa-solid fa-file-pdf w-5 mr-3"></i> Relatórios PDF
+                    </button>
+                </nav>
+            </div>
+            <div class="p-6 border-t border-slate-100">
+                <div class="flex items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div class="w-8 h-8 rounded-full bg-white text-primary flex items-center justify-center font-bold text-xs border border-slate-200 shadow-sm">EB</div>
+                    <div class="ml-3 flex-1 overflow-hidden">
+                        <p class="text-sm font-semibold text-slate-800 truncate">Erika Bezerra</p>
+                        <p class="text-[11px] text-textMuted truncate">Administradora</p>
+                    </div>
+                    <button onclick="logout()" title="Sair" class="text-slate-400 hover:text-slate-700 ml-2 transition">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-screen overflow-y-auto relative w-full bg-background">
+            
+            <!-- Topbar -->
+            <header class="h-20 bg-surface/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20">
+                <div class="flex items-center">
+                    <button class="md:hidden mr-4 text-slate-500"><i class="fa-solid fa-bars text-xl"></i></button>
+                    <h2 id="page-title" class="text-xl font-bold text-slate-800 tracking-tight">Visão Geral</h2>
+                </div>
+                <div class="flex items-center space-x-5">
+                    <button onclick="openModal()" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow flex items-center cursor-pointer">
+                        <i class="fa-solid fa-plus mr-2 text-xs"></i> Novo Item
+                    </button>
+                </div>
+            </header>
+
+            <!-- VIEWS -->
+            <div class="p-8 max-w-7xl mx-auto w-full">
+                
+                <!-- VIEW: DASHBOARD -->
+                <div id="view-dashboard" class="view-section">
+                    <div class="mb-8 flex justify-between items-end">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Olá, Erika 👋</h2>
+                            <p class="text-sm text-textMuted mt-1">Resumo das atividades da comedoria referentes a este mês.</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm hidden md:block text-center">
+                            <span class="text-[10px] font-semibold text-textMuted uppercase tracking-wider block mb-0.5">Mês de Caixa Atual</span>
+                            <span id="current-month-label" class="text-primary font-bold text-sm"></span>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                        <div class="bg-surface p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-semibold text-textMuted uppercase tracking-wider">Itens em Estoque</p>
+                                <i class="fa-solid fa-boxes-stacked text-slate-300"></i>
+                            </div>
+                            <h3 class="text-3xl font-bold text-slate-800" id="kpi-stock">0</h3>
+                        </div>
+                        <div class="bg-surface p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-blue-50 text-primary text-[9px] font-bold px-2 py-1 rounded-bl-lg">NO MÊS</div>
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-semibold text-textMuted uppercase tracking-wider">Faturamento (Mês)</p>
+                                <i class="fa-solid fa-cash-register text-slate-300"></i>
+                            </div>
+                            <h3 class="text-3xl font-bold text-slate-800" id="kpi-revenue">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-surface p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-blue-50 text-primary text-[9px] font-bold px-2 py-1 rounded-bl-lg">NO MÊS</div>
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-semibold text-primary uppercase tracking-wider">Lucro Realizado (Mês)</p>
+                                <i class="fa-solid fa-chart-line text-primary/40"></i>
+                            </div>
+                            <h3 class="text-3xl font-bold text-primary" id="kpi-profit">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-surface p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-semibold text-textMuted uppercase tracking-wider">Margem Média</p>
+                                <i class="fa-solid fa-percent text-slate-300"></i>
+                            </div>
+                            <h3 class="text-3xl font-bold text-slate-800" id="kpi-margin">0%</h3>
+                        </div>
+                    </div>
+
+                    <!-- GRÁFICOS REAIS DO MÊS COM CRESCIMENTO DINÂMICO -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+                        <div class="bg-surface p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <h3 class="text-sm font-bold text-slate-800 mb-1">Vendas Gerais por Semana (Mês Atual)</h3>
+                            <p class="text-xs text-textMuted mb-6">As faixas crescem à medida que as vendas são registradas</p>
+                            <canvas id="chartGeneralWeekly" height="220"></canvas>
+                        </div>
+                        <div class="bg-surface p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <h3 class="text-sm font-bold text-slate-800 mb-1">Top Faturamento por Produto (Mês Atual)</h3>
+                            <p class="text-xs text-textMuted mb-6">Desempenho exato de cada item no faturamento</p>
+                            <canvas id="chartProductPerformance" height="220"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Alertas -->
+                    <div class="bg-surface p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
+                            Alertas de Reposição
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold uppercase tracking-wider">Atenção</span>
+                        </h3>
+                        <div id="stock-alerts" class="space-y-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: INVENTORY -->
+                <div id="view-inventory" class="view-section hidden-view">
+                    <div class="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
+                            <div class="relative w-full sm:w-96">
+                                <i class="fa-solid fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                                <input type="text" id="search-product" placeholder="Buscar por produto ou código..." class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition">
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-white text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-100">
+                                        <th class="px-6 py-4 font-semibold">Item / Código</th>
+                                        <th class="px-6 py-4 font-semibold">Disponível</th>
+                                        <th class="px-6 py-4 font-semibold">Custo (R$)</th>
+                                        <th class="px-6 py-4 font-semibold">Venda (R$)</th>
+                                        <th class="px-6 py-4 font-semibold text-primary">Lucro (R$)</th>
+                                        <th class="px-6 py-4 font-semibold text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-table-body" class="text-sm divide-y divide-slate-50">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: SALES -->
+                <div id="view-sales" class="view-section hidden-view">
+                    <div class="max-w-3xl mx-auto bg-surface p-8 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-800">Registrar Venda</h3>
+                            <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+                                <i class="fa-solid fa-cash-register text-slate-400"></i>
+                            </div>
+                        </div>
+                        
+                        <form id="form-sale" class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Selecione o Produto</label>
+                                <select id="sale-product" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition appearance-none">
+                                    <option value="">Escolha...</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Quantidade</label>
+                                    <input type="number" id="sale-qty" min="1" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none text-sm transition">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Preço Unitário</label>
+                                    <input type="number" id="sale-price" step="0.01" required class="w-full p-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed text-sm" readonly>
+                                </div>
+                            </div>
+                            <div class="pt-8 mt-4 border-t border-slate-100 flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs font-semibold text-textMuted uppercase tracking-wider mb-1">Total da Venda</p>
+                                    <span class="text-3xl font-bold text-slate-800" id="sale-total">R$ 0,00</span>
+                                </div>
+                                <button type="submit" class="bg-primary hover:bg-primaryHover text-white px-8 py-3.5 rounded-xl text-sm font-medium shadow-sm transition-all flex items-center">
+                                    Confirmar Baixa <i class="fa-solid fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="max-w-3xl mx-auto mt-10">
+                        <h3 class="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider">Histórico Recente (Mês Atual)</h3>
+                        <div class="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-6 py-3 font-semibold">Data/Hora</th>
+                                        <th class="px-6 py-3 font-semibold">Produto</th>
+                                        <th class="px-6 py-3 font-semibold text-center">Qtd</th>
+                                        <th class="px-6 py-3 font-semibold">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-history-body" class="text-sm divide-y divide-slate-50">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: REPORTS (PDF Automático) -->
+                <div id="view-reports" class="view-section hidden-view">
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Relatórios Fechados</h2>
+                        <p class="text-sm text-textMuted mt-1">Quando o mês vira, um PDF retrospectivo é gerado aqui automaticamente com o nome do mês e ano.</p>
+                    </div>
+
+                    <div class="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4 font-semibold">Período Referência</th>
+                                    <th class="px-6 py-4 font-semibold">Total Faturado</th>
+                                    <th class="px-6 py-4 font-semibold text-primary">Lucro do Mês</th>
+                                    <th class="px-6 py-4 font-semibold text-center">Arquivo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-table-body" class="text-sm divide-y divide-slate-50">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: ADD PRODUCT -->
+    <div id="modal-product" style="display: none;" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center z-[100] opacity-0 transition-opacity duration-300">
+        <div id="modal-content" class="bg-surface rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-all duration-300 border border-slate-200 mx-4">
+            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="text-base font-bold text-slate-800">Novo Produto</h3>
+                <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-slate-700 transition w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="form-product" class="p-8 space-y-5">
+                <div class="grid grid-cols-2 gap-5">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Nome do Produto</label>
+                        <input type="text" id="prod-name" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">SKU / Código</label>
+                        <input type="text" id="prod-sku" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Categoria</label>
+                        <input type="text" id="prod-category" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Custo (R$)</label>
+                        <input type="number" id="prod-cost" step="0.01" min="0" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Venda (R$)</label>
+                        <input type="number" id="prod-price" step="0.01" min="0" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Qtd Inicial</label>
+                        <input type="number" id="prod-qty" min="0" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-textMuted uppercase tracking-wider mb-2">Estoque Mínimo</label>
+                        <input type="number" id="prod-min" min="0" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition">
+                    </div>
+                </div>
+                <div class="pt-6 mt-2 flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal()" class="px-6 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+                    <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primaryHover transition shadow-sm">Salvar Estoque</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS LOGIC -->
+        <script src="js/core.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/estoque.js"></script>
+    <script src="js/vendas.js"></script>
+    <script src="js/pdf.js"></script>
+</body>
+</html>
